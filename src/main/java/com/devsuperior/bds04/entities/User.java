@@ -34,7 +34,6 @@ public class User implements UserDetails,Serializable {
     }
     public User(Long id, String email, String password, Set<Role> roles) {
         this.id = id;
-
         this.email = email;
         this.password = password;
         this.roles = roles;
