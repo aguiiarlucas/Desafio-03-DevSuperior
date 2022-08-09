@@ -1,30 +1,20 @@
 package com.devsuperior.bds04.config;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-import java.util.Arrays;
-
-;
-
 @Configuration
 @EnableResourceServer
-public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
+public class ResourceServerConfig extends ResourceServerConfigurerAdapter{
 
     @Autowired
     private Environment env;
@@ -32,11 +22,11 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Autowired
     private JwtTokenStore tokenStore;
 
-    private static final String[] PUBLIC = { "/oauth/token", "/h2-console/**" };
+    private static final String[] H2_AND_OAUTH = { "/h2-console/**", "/oauth/token" };
 
-    private static final String[] PUBLIC_GET = { "/cities/**", "/events/**" };
+    private static final String[] PUBLIC = { "/events/**", "/cities/**" };
 
-    private static final String[] CLIENT_ADMIN_POST = { "/events/**" };
+    private static final String[] CLIENT = { "/events/**"};
 
 
     @Override
@@ -47,15 +37,16 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
 
-        // H2
         if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
             http.headers().frameOptions().disable();
         }
 
         http.authorizeRequests()
-                .antMatchers(PUBLIC).permitAll()
-                .antMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
-                .antMatchers(HttpMethod.POST, CLIENT_ADMIN_POST).hasAnyRole("CLIENT", "ADMIN")
+                .antMatchers(H2_AND_OAUTH).permitAll()
+                .antMatchers(HttpMethod.GET, PUBLIC).permitAll()
+                .antMatchers(HttpMethod.POST, CLIENT).hasAnyRole("CLIENT", "ADMIN")
                 .anyRequest().hasAnyRole("ADMIN");
     }
+
+
 }
